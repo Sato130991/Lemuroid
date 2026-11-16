@@ -4,4 +4,5 @@
     <string name="pref_key_virtual_pad_margin_y" translatable="false">virtual_pad_margin_y</string>
     <string name="pref_key_virtual_pad_scale" translatable="false">virtual_pad_scale</string>
     <string name="pref_key_virtual_pad_rotation" translatable="false">virtual_pad_rotation</string>
+    <string name="pref_key_use_analog_stick" translatable="false">use_analog_stick</string>
 </resources>

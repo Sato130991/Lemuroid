@@ -123,6 +123,12 @@ private fun InputSettings(navController: NavController) {
             },
             items = stringListResource(R.array.pref_key_haptic_feedback_mode_display_names),
         )
+        LemuroidSettingsSwitch(
+            state = booleanPreferenceState(R.string.pref_key_use_analog_stick, false),
+            title = {
+                Text(text = stringResource(id = R.string.settings_title_use_analog_stick))
+            },
+        )
         LemuroidSettingsMenuLink(
             title = { Text(text = stringResource(id = R.string.settings_title_gamepad_settings)) },
             subtitle = {

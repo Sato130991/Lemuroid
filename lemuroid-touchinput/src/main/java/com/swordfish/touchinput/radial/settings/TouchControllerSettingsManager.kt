@@ -7,10 +7,12 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.max
 import androidx.core.content.edit
+import com.fredporciuncula.flow.preferences.FlowSharedPreferences
 import com.swordfish.lemuroid.common.compose.pxToDp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -18,6 +20,8 @@ import kotlinx.serialization.json.Json
 import timber.log.Timber
 
 class TouchControllerSettingsManager(private val sharedPreferences: SharedPreferences) {
+    private val flowSharedPreferences = FlowSharedPreferences(sharedPreferences)
+
     enum class Orientation {
         PORTRAIT,
         LANDSCAPE,
@@ -29,6 +33,7 @@ class TouchControllerSettingsManager(private val sharedPreferences: SharedPrefer
         val rotation: Float = DEFAULT_ROTATION,
         val marginX: Float = DEFAULT_MARGIN_X,
         val marginY: Float = DEFAULT_MARGIN_Y,
+        val useAnalogStick: Boolean = DEFAULT_USE_ANALOG_STICK,
     )
 
     private fun computeInsetsPaddings(
@@ -66,17 +71,31 @@ class TouchControllerSettingsManager(private val sharedPreferences: SharedPrefer
                 rotation = DEFAULT_ROTATION,
                 marginX = horizontalPadding.value / MAX_MARGINS,
                 marginY = verticalPadding.value / MAX_MARGINS,
+                useAnalogStick = sharedPreferences.getBoolean(USE_ANALOG_STICK_KEY, DEFAULT_USE_ANALOG_STICK),
             )
         val settingsKey = getPreferenceString(touchControllerID, orientation)
         val cachedStateFlow =
             cachedSettings.getOrPut(settingsKey) {
                 val currentSettings =
                     sharedPreferences.getString(settingsKey, null)
-                        ?.let { Json.decodeFromString(Settings.serializer(), it) }
+                        ?.let {
+                            runCatching {
+                                Json.decodeFromString(Settings.serializer(), it)
+                            }.getOrNull()
+                        }
 
                 MutableStateFlow(currentSettings)
             }
-        return cachedStateFlow.map { it ?: defaultSettings }
+        val useAnalogStickFlow =
+            flowSharedPreferences
+                .getBoolean(USE_ANALOG_STICK_KEY, DEFAULT_USE_ANALOG_STICK)
+                .asFlow()
+        return combine(
+            cachedStateFlow.map { it ?: defaultSettings },
+            useAnalogStickFlow,
+        ) { settings, useAnalogStick ->
+            settings.copy(useAnalogStick = useAnalogStick)
+        }
     }
 
     suspend fun storeSettings(
@@ -92,6 +111,7 @@ class TouchControllerSettingsManager(private val sharedPreferences: SharedPrefer
                     getPreferenceString(touchControllerID, orientation),
                     Json.encodeToString(Settings.serializer(), settings),
                 )
+                putBoolean(USE_ANALOG_STICK_KEY, settings.useAnalogStick)
             }
         }
     }
@@ -123,6 +143,8 @@ class TouchControllerSettingsManager(private val sharedPreferences: SharedPrefer
         const val DEFAULT_ROTATION = 0.0f
         const val DEFAULT_MARGIN_X = 0.0f
         const val DEFAULT_MARGIN_Y = 0.0f
+        const val DEFAULT_USE_ANALOG_STICK = false
+        const val USE_ANALOG_STICK_KEY = "use_analog_stick"
 
         const val MAX_ROTATION = 45f
         const val MIN_SCALE = 0.75f

@@ -6,6 +6,7 @@ import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
 import com.swordfish.touchinput.controller.R
 import com.swordfish.touchinput.radial.controls.LemuroidControlAnalog
+import com.swordfish.touchinput.radial.controls.LemuroidControlCross
 import com.swordfish.touchinput.radial.controls.LemuroidControlFaceButtons
 import com.swordfish.touchinput.radial.layouts.shared.ComposeTouchLayouts
 import com.swordfish.touchinput.radial.layouts.shared.SecondaryButtonL1
@@ -31,7 +32,17 @@ fun PadKitScope.PSXLeft(
     BaseLayoutLeft(
         settings = settings,
         modifier = modifier,
-        primaryDial = { LemuroidControlAnalog(id = Id.ContinuousDirection(ComposeTouchLayouts.MOTION_SOURCE_DPAD_AND_LEFT_STICK)) },
+        primaryDial = {
+            if (settings.useAnalogStick) {
+                LemuroidControlAnalog(
+                    id = Id.ContinuousDirection(ComposeTouchLayouts.MOTION_SOURCE_DPAD_AND_LEFT_STICK),
+                )
+            } else {
+                LemuroidControlCross(
+                    id = Id.DiscreteDirection(ComposeTouchLayouts.MOTION_SOURCE_DPAD),
+                )
+            }
+        },
         secondaryDials = {
             SecondaryButtonL1()
             SecondaryButtonL2()

@@ -24,6 +24,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -320,6 +321,27 @@ private fun MenuEditTouchControls(
                             },
                         )
                     }
+                }
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = "Usar joystick en lugar de D-pad",
+                        modifier = Modifier.weight(1f),
+                    )
+                    Switch(
+                        checked = touchControllerSettings.useAnalogStick,
+                        onCheckedChange = {
+                            viewModel.updateTouchControllerSettings(
+                                touchControllerSettings.copy(useAnalogStick = it),
+                            )
+                        },
+                    )
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
