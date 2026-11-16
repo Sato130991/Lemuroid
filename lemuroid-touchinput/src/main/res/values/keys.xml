@@ -5,4 +5,8 @@
     <string name="pref_key_virtual_pad_scale" translatable="false">virtual_pad_scale</string>
     <string name="pref_key_virtual_pad_rotation" translatable="false">virtual_pad_rotation</string>
     <string name="pref_key_use_analog_stick" translatable="false">use_analog_stick</string>
+    <string name="pref_key_touch_controls_opacity" translatable="false">touch_controls_opacity</string>
+    <string name="pref_key_touch_auto_hide_seconds" translatable="false">touch_auto_hide_seconds</string>
+    <string name="pref_key_touch_skin" translatable="false">touch_controls_skin</string>
+    <string name="pref_key_touch_quick_actions" translatable="false">touch_quick_actions</string>
 </resources>

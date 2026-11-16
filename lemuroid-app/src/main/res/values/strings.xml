@@ -124,6 +124,8 @@
 
     <string name="game_menu_save">Save</string>
     <string name="game_menu_load">Load</string>
+    <string name="game_menu_quick_save">Quick Save</string>
+    <string name="game_menu_quick_load">Quick Load</string>
     <string name="game_menu_restart">Restart</string>
     <string name="game_menu_quit">Quit</string>
     <string name="game_menu_settings">Settings</string>
@@ -230,6 +232,47 @@
     <string name="shader_filter_names_smooth">Smooth</string>
     <string name="shader_filter_names_crt">CRT</string>
     <string name="shader_filter_names_lcd">LCD</string>
+    <string name="shader_filter_names_upscale_fast">Simple Upscale (Fast)</string>
+    <string name="shader_filter_names_upscale_soft">Simple Upscale (Soft)</string>
+
+    <string name="settings_category_appearance">Appearance &amp; Theme</string>
+    <string name="settings_title_theme_mode">Theme mode</string>
+    <string name="settings_title_theme_accent">Theme color palette</string>
+    <string name="theme_mode_dark">Dark</string>
+    <string name="theme_mode_light">Light</string>
+    <string name="theme_mode_amoled">AMOLED Pure Black</string>
+    <string name="theme_mode_system">Follow system</string>
+    <string name="theme_accent_dynamic">Dynamic / Default</string>
+    <string name="theme_accent_green">Lemuroid Green</string>
+    <string name="theme_accent_blue">Retro Blue (PS)</string>
+    <string name="theme_accent_purple">SNES Purple</string>
+    <string name="theme_accent_red">Nintendo Red</string>
+    <string name="theme_accent_orange">Arcade Orange</string>
+
+    <string name="settings_title_touch_skin">Controller skin</string>
+    <string name="settings_title_touch_opacity">Controls opacity</string>
+    <string name="settings_title_touch_auto_hide">Auto-hide controls (seconds)</string>
+    <string name="settings_title_touch_quick_actions">Quick action bar (Quick Save / Fast Forward)</string>
+    <string name="settings_title_gesture_double_tap">Double-tap screen gesture</string>
+
+    <string name="touch_skin_auto">Automatic (By Console)</string>
+    <string name="touch_skin_classic">Lemuroid Glass</string>
+    <string name="touch_skin_nes">NES Classic</string>
+    <string name="touch_skin_snes">Super Nintendo</string>
+    <string name="touch_skin_gb">Game Boy DMG</string>
+    <string name="touch_skin_gba">Game Boy Advance</string>
+    <string name="touch_skin_genesis">Sega Mega Drive</string>
+    <string name="touch_skin_psx">PlayStation 1</string>
+    <string name="touch_skin_n64">Nintendo 64</string>
+    <string name="touch_skin_arcade">Arcade Neon</string>
+    <string name="touch_skin_oled">Dark OLED</string>
+
+    <string name="gesture_action_fast_forward">Toggle Fast Forward</string>
+    <string name="gesture_action_quick_save">Quick Save</string>
+    <string name="gesture_action_quick_load">Quick Load</string>
+    <string name="gesture_action_toggle_controls">Show / Hide Controls</string>
+    <string name="gesture_action_menu">Open Game Menu</string>
+    <string name="gesture_action_none">Disabled</string>
 
     <string name="viewport_alignment_names_top">Top</string>
     <string name="viewport_alignment_names_center">Center</string>

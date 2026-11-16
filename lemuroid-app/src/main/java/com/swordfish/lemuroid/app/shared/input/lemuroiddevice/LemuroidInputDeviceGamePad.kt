@@ -27,6 +27,14 @@ class LemuroidInputDeviceGamePad(private val device: InputDevice) : LemuroidInpu
                 KeyEvent.KEYCODE_BUTTON_B to KeyEvent.KEYCODE_BUTTON_A,
                 KeyEvent.KEYCODE_BUTTON_X to KeyEvent.KEYCODE_BUTTON_Y,
                 KeyEvent.KEYCODE_BUTTON_Y to KeyEvent.KEYCODE_BUTTON_X,
+                KeyEvent.KEYCODE_DPAD_UP to KeyEvent.KEYCODE_DPAD_UP,
+                KeyEvent.KEYCODE_DPAD_DOWN to KeyEvent.KEYCODE_DPAD_DOWN,
+                KeyEvent.KEYCODE_DPAD_LEFT to KeyEvent.KEYCODE_DPAD_LEFT,
+                KeyEvent.KEYCODE_DPAD_RIGHT to KeyEvent.KEYCODE_DPAD_RIGHT,
+                KeyEvent.KEYCODE_BUTTON_1 to KeyEvent.KEYCODE_BUTTON_B,
+                KeyEvent.KEYCODE_BUTTON_2 to KeyEvent.KEYCODE_BUTTON_A,
+                KeyEvent.KEYCODE_BUTTON_3 to KeyEvent.KEYCODE_BUTTON_Y,
+                KeyEvent.KEYCODE_BUTTON_4 to KeyEvent.KEYCODE_BUTTON_X,
             )
 
         return allAvailableInputs + defaultOverride
@@ -46,17 +54,23 @@ class LemuroidInputDeviceGamePad(private val device: InputDevice) : LemuroidInpu
     }
 
     override fun isEnabledByDefault(appContext: Context): Boolean {
-        return device.supportsAllKeys(MINIMAL_KEYS_DEFAULT_ENABLED)
+        return device.supportsAllKeys(MINIMAL_KEYS_DEFAULT_ENABLED) ||
+            device.supportsAllKeys(MINIMAL_SUPPORTED_KEYS)
     }
 
     override fun getSupportedShortcuts(): List<GameShortcutType> = GameShortcutType.values().toList()
 
     override fun isSupported(): Boolean {
+        val hasGamePadOrJoystickSource =
+            (device.sources and InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD ||
+                (device.sources and InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK
+        val hasMinimalButtons =
+            device.supportsAllKeys(MINIMAL_SUPPORTED_KEYS) ||
+                device.supportsAllKeys(GENERIC_HID_SUPPORTED_KEYS)
         return sequenceOf(
-            device.sources and InputDevice.SOURCE_GAMEPAD == InputDevice.SOURCE_GAMEPAD,
-            device.supportsAllKeys(MINIMAL_SUPPORTED_KEYS),
+            hasGamePadOrJoystickSource,
+            hasMinimalButtons,
             device.isVirtual.not(),
-            device.controllerNumber > 0,
         ).all { it }
     }
 
@@ -81,8 +95,12 @@ class LemuroidInputDeviceGamePad(private val device: InputDevice) : LemuroidInpu
             inputKeysOf(
                 KeyEvent.KEYCODE_BUTTON_A,
                 KeyEvent.KEYCODE_BUTTON_B,
-                KeyEvent.KEYCODE_BUTTON_X,
-                KeyEvent.KEYCODE_BUTTON_Y,
+            )
+
+        private val GENERIC_HID_SUPPORTED_KEYS =
+            inputKeysOf(
+                KeyEvent.KEYCODE_BUTTON_1,
+                KeyEvent.KEYCODE_BUTTON_2,
             )
 
         private val MINIMAL_KEYS_DEFAULT_ENABLED =

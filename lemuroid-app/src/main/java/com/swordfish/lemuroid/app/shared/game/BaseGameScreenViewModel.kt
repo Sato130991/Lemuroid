@@ -41,18 +41,19 @@ import gg.padkit.inputstate.InputState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class BaseGameScreenViewModel(
     private val appContext: Context,
     game: Game,
-    settingsManager: SettingsManager,
+    private val settingsManager: SettingsManager,
     inputDeviceManager: InputDeviceManager,
     controllerConfigsManager: ControllerConfigsManager,
-    system: GameSystem,
-    systemCoreConfig: SystemCoreConfig,
-    sharedPreferences: SharedPreferences,
+    private val system: GameSystem,
+    private val systemCoreConfig: SystemCoreConfig,
+    private val sharedPreferences: SharedPreferences,
     savesManager: SavesManager,
     statesManager: StatesManager,
     statesPreviewManager: StatesPreviewManager,
@@ -143,6 +144,7 @@ class BaseGameScreenViewModel(
         )
 
     val loadingState = MutableStateFlow(false)
+    val fastForwardEnabled = MutableStateFlow(false)
 
     private inline fun withLoading(block: () -> Unit) {
         loadingState.value = true
@@ -213,6 +215,40 @@ class BaseGameScreenViewModel(
         touchControls.updateTouchControllerSettings(touchControllerSettings)
     }
 
+    fun saveTouchControllerProfile(
+        profileId: String,
+        settings: TouchControllerSettingsManager.Settings,
+    ) {
+        touchControls.saveTouchControllerProfile(profileId, settings)
+    }
+
+    fun loadTouchControllerProfile(
+        profileId: String,
+        currentSettings: TouchControllerSettingsManager.Settings,
+    ) {
+        touchControls.loadTouchControllerProfile(profileId, currentSettings)
+    }
+
+    fun getAvailableControlProfiles(): List<TouchControllerSettingsManager.ControlProfile> {
+        return touchControls.getAvailableProfiles()
+    }
+
+    fun getLastTouchInteractionTime(): StateFlow<Long> {
+        return touchControls.getLastInteractionTime()
+    }
+
+    fun notifyTouchInteraction() {
+        touchControls.notifyTouchInteraction()
+    }
+
+    fun isManualControlsHidden(): StateFlow<Boolean> {
+        return touchControls.isManualControlsHidden()
+    }
+
+    fun toggleManualControlsHidden() {
+        touchControls.toggleManualControlsHidden()
+    }
+
     fun resetTouchControls() {
         touchControls.resetTouchControls()
     }
@@ -237,6 +273,28 @@ class BaseGameScreenViewModel(
         return touchControls.isMenuPressed()
     }
 
+    fun openGameMenu() {
+        sideEffects.showMenu(tilt, inputs)
+    }
+
+    fun isStatesSupported(): Boolean = systemCoreConfig.statesSupported
+
+    fun isFastForwardSupported(): Boolean = system.fastForwardSupport
+
+    fun getDoubleTapGestureAction(): String {
+        return sharedPreferences.getString("gesture_double_tap_action", "fast_forward") ?: "fast_forward"
+    }
+
+    fun triggerConfiguredGesture(action: String) {
+        when (action) {
+            "fast_forward" -> if (system.fastForwardSupport) toggleFastForward()
+            "quick_save" -> if (systemCoreConfig.statesSupported) saveQuickSave()
+            "quick_load" -> if (systemCoreConfig.statesSupported) loadQuickSave()
+            "menu" -> openGameMenu()
+            "toggle_controls" -> toggleManualControlsHidden()
+        }
+    }
+
     suspend fun saveSlot(index: Int) {
         if (loadingState.value) return
         withLoading {
@@ -254,23 +312,35 @@ class BaseGameScreenViewModel(
     fun saveQuickSave() {
         Timber.d("Saving quick save")
         if (loadingState.value) return
-        withLoading {
-            saves.saveQuickSave()
+        viewModelScope.launch {
+            withLoading {
+                saves.saveQuickSavePersistent()
+            }
         }
     }
 
     fun loadQuickSave() {
         Timber.d("Loading quick save")
         if (loadingState.value) return
-        withLoading {
-            saves.loadQuickSave()
+        viewModelScope.launch {
+            withLoading {
+                saves.loadQuickSavePersistent()
+            }
         }
     }
 
     fun toggleFastForward() {
-        Timber.d("Loading quick save")
         retroGameView.retroGameView?.apply {
-            frameSpeed = if (frameSpeed == 1) 2 else 1
+            val newSpeed = if (frameSpeed == 1) 2 else 1
+            frameSpeed = newSpeed
+            fastForwardEnabled.value = newSpeed > 1
+        }
+    }
+
+    fun setFastForward(enabled: Boolean) {
+        retroGameView.retroGameView?.apply {
+            frameSpeed = if (enabled) 2 else 1
+            fastForwardEnabled.value = enabled
         }
     }
 

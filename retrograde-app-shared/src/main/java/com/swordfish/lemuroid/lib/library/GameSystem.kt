@@ -719,6 +719,11 @@ data class GameSystem(
                                 listOf(
                                     CoreVariable("mupen64plus-43screensize", "320x240"),
                                     CoreVariable("mupen64plus-FrameDuping", "True"),
+                                    CoreVariable("mupen64plus-cpucore", "dynamic_recompiler"),
+                                    CoreVariable("mupen64plus-ThreadedRenderer", "True"),
+                                    CoreVariable("mupen64plus-HybridFilter", "False"),
+                                    CoreVariable("mupen64plus-LODEmulation", "False"),
+                                    CoreVariable("mupen64plus-EnableHWLighting", "False"),
                                 ),
                             controllerConfigs =
                                 hashMapOf(
@@ -805,6 +810,14 @@ data class GameSystem(
                             defaultSettings =
                                 listOf(
                                     CoreVariable("ppsspp_frame_duplication", "enabled"),
+                                    CoreVariable("ppsspp_cpu_core", "JIT"),
+                                    CoreVariable("ppsspp_fast_memory", "enabled"),
+                                    CoreVariable("ppsspp_vertex_cache", "enabled"),
+                                    CoreVariable("ppsspp_lazy_texture_caching", "enabled"),
+                                    CoreVariable("ppsspp_gpu_hardware_transform", "enabled"),
+                                    CoreVariable("ppsspp_separate_io_thread", "enabled"),
+                                    CoreVariable("ppsspp_auto_frameskip", "enabled"),
+                                    CoreVariable("ppsspp_frameskip", "1"),
                                 ),
                             exposedSettings =
                                 listOf(

@@ -380,6 +380,12 @@ abstract class BaseGameActivity : ImmersiveActivity() {
                     baseGameScreenViewModel.loadSlot(data.getIntExtra(GameMenuContract.RESULT_LOAD, 0))
                 }
             }
+            if (data?.getBooleanExtra(GameMenuContract.RESULT_QUICK_SAVE, false) == true) {
+                baseGameScreenViewModel.saveQuickSave()
+            }
+            if (data?.getBooleanExtra(GameMenuContract.RESULT_QUICK_LOAD, false) == true) {
+                baseGameScreenViewModel.loadQuickSave()
+            }
             if (data?.getBooleanExtra(GameMenuContract.RESULT_QUIT, false) == true) {
                 baseGameScreenViewModel.requestFinish()
             }
@@ -397,14 +403,12 @@ abstract class BaseGameActivity : ImmersiveActivity() {
                 }
             }
             if (data?.hasExtra(GameMenuContract.RESULT_ENABLE_FAST_FORWARD) == true) {
-                baseGameScreenViewModel.retroGameView.retroGameView?.apply {
-                    val fastForwardEnabled =
-                        data.getBooleanExtra(
-                            GameMenuContract.RESULT_ENABLE_FAST_FORWARD,
-                            false,
-                        )
-                    this.frameSpeed = if (fastForwardEnabled) 2 else 1
-                }
+                val fastForwardEnabled =
+                    data.getBooleanExtra(
+                        GameMenuContract.RESULT_ENABLE_FAST_FORWARD,
+                        false,
+                    )
+                baseGameScreenViewModel.setFastForward(fastForwardEnabled)
             }
             if (data?.getBooleanExtra(GameMenuContract.RESULT_EDIT_TOUCH_CONTROLS, false) == true) {
                 baseGameScreenViewModel.showEditControls(true)

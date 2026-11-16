@@ -33,6 +33,18 @@ object ShaderChooser {
                     "lcd" -> ShaderConfig.LCD
                     "smooth" -> ShaderConfig.Default
                     "sharp" -> ShaderConfig.Sharp
+                    "upscale_fast" ->
+                        ShaderConfig.CUT(
+                            blendMinContrastEdge = 0.05f,
+                            blendMaxContrastEdge = 0.55f,
+                            blendMaxSharpness = 0.85f,
+                        )
+                    "upscale_soft" ->
+                        ShaderConfig.CUT(
+                            blendMinContrastEdge = 0.20f,
+                            blendMaxContrastEdge = 0.70f,
+                            blendMaxSharpness = 0.55f,
+                        )
                     else -> getDefaultShaderForSystem(system)
                 }
         }

@@ -16,6 +16,8 @@ class LibretroDBMetadataProvider(private val ovgdbManager: LibretroDBManager) :
     GameMetadataProvider {
     companion object {
         private val THUMB_REPLACE = Regex("[&*/:`<>?\\\\|]")
+        private val BRACKETS_REGEX = Regex("\\[.*?\\]")
+        private val PARENS_REGEX = Regex("\\(.*?\\)")
     }
 
     private val sortedSystemIds: List<String> by lazy {
@@ -35,6 +37,7 @@ class LibretroDBMetadataProvider(private val ovgdbManager: LibretroDBManager) :
                     ?: findBySerial(storageFile, db)
                     ?: findByFilename(db, storageFile)
                     ?: findByPathAndFilename(db, storageFile)
+                    ?: findByNormalizedTitle(db, storageFile)
                     ?: findByUniqueExtension(storageFile)
                     ?: findByKnownSystem(storageFile)
                     ?: findByPathAndSupportedExtension(storageFile)
@@ -78,6 +81,21 @@ class LibretroDBMetadataProvider(private val ovgdbManager: LibretroDBManager) :
             ?.let { convertToGameMetadata(it) }
     }
 
+    private suspend fun findByNormalizedTitle(
+        db: LibretroDatabase,
+        file: StorageFile,
+    ): GameMetadata? {
+        val cleaned = cleanRomTitle(file.extensionlessName)
+        if (cleaned.length < 3) return null
+        val rom = db.gameDao().findByTitlePattern("$cleaned%") ?: return null
+        val romSystem = extractGameSystem(rom)
+        val matchesSystem =
+            file.systemID == romSystem.id ||
+                GameSystem.findByUniqueFileExtension(file.extension)?.id == romSystem.id ||
+                parentContainsSystem(file.path, romSystem.id.dbname)
+        return if (matchesSystem) convertToGameMetadata(rom) else null
+    }
+
     private fun findByPathAndSupportedExtension(file: StorageFile): GameMetadata? {
         val system =
             sortedSystemIds
@@ -90,7 +108,7 @@ class LibretroDBMetadataProvider(private val ovgdbManager: LibretroDBManager) :
             GameMetadata(
                 name = file.extensionlessName,
                 romName = file.name,
-                thumbnail = null,
+                thumbnail = computeCoverUrl(it, file.extensionlessName),
                 system = it.id.dbname,
                 developer = null,
             )
@@ -123,13 +141,14 @@ class LibretroDBMetadataProvider(private val ovgdbManager: LibretroDBManager) :
     }
 
     private fun findByKnownSystem(file: StorageFile): GameMetadata? {
-        if (file.systemID == null) return null
+        val systemId = file.systemID ?: return null
+        val system = GameSystem.findById(systemId.dbname)
 
         return GameMetadata(
             name = file.extensionlessName,
             romName = file.name,
-            thumbnail = null,
-            system = file.systemID!!.dbname,
+            thumbnail = computeCoverUrl(system, file.extensionlessName),
+            system = systemId.dbname,
             developer = null,
         )
     }
@@ -146,7 +165,7 @@ class LibretroDBMetadataProvider(private val ovgdbManager: LibretroDBManager) :
                 GameMetadata(
                     name = file.extensionlessName,
                     romName = file.name,
-                    thumbnail = null,
+                    thumbnail = computeCoverUrl(it, file.extensionlessName),
                     system = it.id.dbname,
                     developer = null,
                 )
@@ -157,6 +176,15 @@ class LibretroDBMetadataProvider(private val ovgdbManager: LibretroDBManager) :
 
     private fun extractGameSystem(rom: LibretroRom): GameSystem {
         return GameSystem.findById(rom.system!!)
+    }
+
+    private fun cleanRomTitle(rawName: String): String {
+        return rawName
+            .replace(BRACKETS_REGEX, "")
+            .replace(PARENS_REGEX, "")
+            .replace('_', ' ')
+            .trim()
+            .replace(Regex("\\s+"), " ")
     }
 
     private fun computeCoverUrl(
@@ -170,14 +198,18 @@ class LibretroDBMetadataProvider(private val ovgdbManager: LibretroDBManager) :
             systemName = "MAME"
         }
 
-        if (name == null) {
+        if (name.isNullOrBlank()) {
             return null
         }
 
         val imageType = "Named_Boxarts"
 
-        val thumbGameName = name.replace(THUMB_REPLACE, "_")
+        val thumbGameName =
+            name
+                .replace(BRACKETS_REGEX, "")
+                .trim()
+                .replace(THUMB_REPLACE, "_")
 
-        return "http://thumbnails.libretro.com/$systemName/$imageType/$thumbGameName.png"
+        return "https://thumbnails.libretro.com/$systemName/$imageType/$thumbGameName.png"
     }
 }

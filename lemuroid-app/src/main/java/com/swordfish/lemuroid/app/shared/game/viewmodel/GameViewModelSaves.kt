@@ -159,12 +159,46 @@ class GameViewModelSaves(
     }
 
     fun saveQuickSave() {
-        currentQuickSave = getCurrentSaveState()
+        val state = getCurrentSaveState() ?: return
+        currentQuickSave = state
+        sideEffects.showToast(appContext.getString(R.string.game_toast_quick_save_saved))
+    }
+
+    suspend fun saveQuickSavePersistent() {
+        val state = getCurrentSaveState() ?: return
+        currentQuickSave = state
+        runCatching {
+            statesManager.setSlotSave(game, state, systemCoreConfig.coreID, 0)
+            takeScreenshotPreview(0)
+        }
         sideEffects.showToast(appContext.getString(R.string.game_toast_quick_save_saved))
     }
 
     fun loadQuickSave() {
-        loadSaveState(currentQuickSave ?: return)
-        sideEffects.showToast(appContext.getString(R.string.game_toast_quick_save_loaded))
+        val state = currentQuickSave
+        if (state != null) {
+            loadSaveState(state)
+            sideEffects.showToast(appContext.getString(R.string.game_toast_quick_save_loaded))
+        }
+    }
+
+    suspend fun loadQuickSavePersistent() {
+        val state =
+            currentQuickSave
+                ?: runCatching { statesManager.getSlotSave(game, systemCoreConfig.coreID, 0) }.getOrNull()
+        if (state == null) {
+            sideEffects.showToast(appContext.getString(R.string.game_toast_load_state_failed))
+            return
+        }
+        currentQuickSave = state
+        val loaded =
+            withContext(Dispatchers.IO) {
+                runCatching { loadSaveState(state) }.getOrDefault(false)
+            }
+        if (loaded) {
+            sideEffects.showToast(appContext.getString(R.string.game_toast_quick_save_loaded))
+        } else {
+            sideEffects.showToast(appContext.getString(R.string.game_toast_load_state_failed))
+        }
     }
 }

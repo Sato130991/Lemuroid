@@ -17,4 +17,7 @@ interface GameDao {
 
     @Query("SELECT * FROM games WHERE serial = :serial LIMIT 1")
     suspend fun findBySerial(serial: String): LibretroRom?
+
+    @Query("SELECT * FROM games WHERE name LIKE :titlePattern LIMIT 1")
+    suspend fun findByTitlePattern(titlePattern: String): LibretroRom?
 }

@@ -26,6 +26,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
@@ -49,6 +50,8 @@ class GameViewModelTouchControls(
     private val menuPressed = MutableStateFlow(false)
     private val showEditControls = MutableStateFlow(false)
     private val hapticFeedbackMode = MutableStateFlow(HapticFeedbackMode.NONE)
+    private val lastInteractionTime = MutableStateFlow(System.currentTimeMillis())
+    private val manualControlsHidden = MutableStateFlow(false)
 
     private var loadingMenuJob: Job? = null
 
@@ -83,6 +86,7 @@ class GameViewModelTouchControls(
     }
 
     fun updateTouchControllerSettings(touchControllerSettings: TouchControllerSettingsManager.Settings) {
+        notifyTouchInteraction()
         scope.launch {
             touchControllerSettingsManager.storeSettings(
                 touchControlId.value,
@@ -92,7 +96,63 @@ class GameViewModelTouchControls(
         }
     }
 
+    fun saveTouchControllerProfile(
+        profileId: String,
+        settings: TouchControllerSettingsManager.Settings,
+    ) {
+        notifyTouchInteraction()
+        scope.launch {
+            touchControllerSettingsManager.saveProfile(
+                profileId,
+                screenOrientation.value,
+                settings,
+            )
+            touchControllerSettingsManager.storeSettings(
+                touchControlId.value,
+                screenOrientation.value,
+                settings.copy(profileName = profileId),
+            )
+            sideEffects.showToast("Perfil guardado: $profileId")
+        }
+    }
+
+    fun loadTouchControllerProfile(
+        profileId: String,
+        currentSettings: TouchControllerSettingsManager.Settings,
+    ) {
+        notifyTouchInteraction()
+        scope.launch {
+            touchControllerSettingsManager.loadProfile(
+                profileId,
+                touchControlId.value,
+                screenOrientation.value,
+                currentSettings,
+            )
+            sideEffects.showToast("Perfil cargado: $profileId")
+        }
+    }
+
+    fun getAvailableProfiles(): List<TouchControllerSettingsManager.ControlProfile> {
+        return touchControllerSettingsManager.getAvailableProfiles()
+    }
+
+    fun getLastInteractionTime(): StateFlow<Long> = lastInteractionTime
+
+    fun notifyTouchInteraction() {
+        lastInteractionTime.value = System.currentTimeMillis()
+    }
+
+    fun isManualControlsHidden(): StateFlow<Boolean> = manualControlsHidden
+
+    fun toggleManualControlsHidden() {
+        manualControlsHidden.value = !manualControlsHidden.value
+        if (!manualControlsHidden.value) {
+            notifyTouchInteraction()
+        }
+    }
+
     fun resetTouchControls() {
+        notifyTouchInteraction()
         scope.launch {
             touchControllerSettingsManager.resetSettings(
                 touchControlId.value,
@@ -118,6 +178,7 @@ class GameViewModelTouchControls(
     }
 
     fun handleVirtualInputEvent(events: List<InputEvent>) {
+        notifyTouchInteraction()
         val menuEvent = events.firstOrNull { it is InputEvent.Button && it.id == KeyEvent.KEYCODE_BUTTON_MODE }
         if (menuEvent != null) {
             onMenuPressed((menuEvent as InputEvent.Button).pressed)
@@ -165,6 +226,7 @@ class GameViewModelTouchControls(
     }
 
     fun showEditControls(show: Boolean) {
+        notifyTouchInteraction()
         showEditControls.value = show
     }
 

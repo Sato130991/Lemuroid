@@ -8,6 +8,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,6 +26,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AppShortcut
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Edit
@@ -36,7 +39,9 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
@@ -60,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import com.swordfish.lemuroid.R
 import com.swordfish.lemuroid.app.mobile.shared.compose.ui.LemuroidGameTexts
 import com.swordfish.lemuroid.app.mobile.shared.compose.ui.LemuroidSmallGameImage
+import com.swordfish.lemuroid.lib.library.CollectionsManager
 import com.swordfish.lemuroid.lib.library.db.entity.Game
 import timber.log.Timber
 
@@ -126,23 +132,32 @@ private fun ContextActionContent(
 ) {
     val context = LocalContext.current
     var showCustomNameDialog by remember { mutableStateOf(false) }
+    var showNewCollectionDialog by remember { mutableStateOf(false) }
+    var newCollectionName by remember { mutableStateOf("") }
 
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-    ) { uri: Uri? ->
-        if (uri != null) {
-            try {
-                context.contentResolver.takePersistableUriPermission(
-                    uri,
-                    android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                )
-            } catch (e: SecurityException) {
-                Timber.e(e, "Failed to persist read URI permission for custom cover")
-            }
-            onSetCustomCoverUri(selectedGame, uri.toString())
-            selectedGameState.value = null
-        }
+    val collectionsManager = remember(context) { CollectionsManager(context) }
+    var collectionNames by remember(selectedGame) { mutableStateOf(collectionsManager.getCollectionNames()) }
+    var gameCollections by remember(selectedGame) {
+        mutableStateOf(collectionsManager.getCollectionsForGame(selectedGame.id))
     }
+
+    val imagePickerLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent(),
+        ) { uri: Uri? ->
+            if (uri != null) {
+                try {
+                    context.contentResolver.takePersistableUriPermission(
+                        uri,
+                        android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                    )
+                } catch (e: SecurityException) {
+                    Timber.e(e, "Failed to persist read URI permission for custom cover")
+                }
+                onSetCustomCoverUri(selectedGame, uri.toString())
+                selectedGameState.value = null
+            }
+        }
 
     Column(
         modifier =
@@ -153,6 +168,48 @@ private fun ContextActionContent(
     ) {
         ContextActionHeader(game = selectedGame)
         Divider()
+
+        // Collections quick chips
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = "Colecciones (Carpeta: ${CollectionsManager.extractFolderName(selectedGame)})",
+                style = MaterialTheme.typography.labelMedium,
+            )
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                collectionNames.forEach { collectionName ->
+                    val isMember = collectionName in gameCollections
+                    FilterChip(
+                        selected = isMember,
+                        onClick = {
+                            collectionsManager.toggleGameInCollection(collectionName, selectedGame.id)
+                            gameCollections = collectionsManager.getCollectionsForGame(selectedGame.id)
+                        },
+                        label = { Text(collectionName) },
+                    )
+                }
+                FilterChip(
+                    selected = false,
+                    onClick = { showNewCollectionDialog = true },
+                    leadingIcon = { Icon(Icons.Default.Add, contentDescription = null) },
+                    label = { Text("Nueva") },
+                )
+            }
+        }
+        Divider()
+
         ContextActionEntry(
             label = stringResource(id = R.string.game_context_menu_resume),
             icon = Icons.Default.PlayArrow,
@@ -248,6 +305,43 @@ private fun ContextActionContent(
                 showCustomNameDialog = false
                 onSetCustomName(selectedGame, newName)
                 selectedGameState.value = null
+            },
+        )
+    }
+
+    if (showNewCollectionDialog) {
+        AlertDialog(
+            onDismissRequest = { showNewCollectionDialog = false },
+            title = { Text("Nueva colección") },
+            text = {
+                OutlinedTextField(
+                    value = newCollectionName,
+                    onValueChange = { newCollectionName = it },
+                    singleLine = true,
+                    label = { Text("Nombre de la colección") },
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val trimmed = newCollectionName.trim()
+                        if (trimmed.isNotEmpty()) {
+                            collectionsManager.createCollection(trimmed)
+                            collectionsManager.toggleGameInCollection(trimmed, selectedGame.id)
+                            collectionNames = collectionsManager.getCollectionNames()
+                            gameCollections = collectionsManager.getCollectionsForGame(selectedGame.id)
+                            newCollectionName = ""
+                        }
+                        showNewCollectionDialog = false
+                    },
+                ) {
+                    Text(stringResource(id = R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showNewCollectionDialog = false }) {
+                    Text(stringResource(id = R.string.cancel))
+                }
             },
         )
     }

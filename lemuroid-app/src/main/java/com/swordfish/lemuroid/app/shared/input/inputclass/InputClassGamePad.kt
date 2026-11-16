@@ -18,6 +18,7 @@ object InputClassGamePad : InputClass {
         mapOf(
             MotionEvent.AXIS_BRAKE to KeyEvent.KEYCODE_BUTTON_L2,
             MotionEvent.AXIS_THROTTLE to KeyEvent.KEYCODE_BUTTON_R2,
+            MotionEvent.AXIS_GAS to KeyEvent.KEYCODE_BUTTON_R2,
             MotionEvent.AXIS_LTRIGGER to KeyEvent.KEYCODE_BUTTON_L2,
             MotionEvent.AXIS_RTRIGGER to KeyEvent.KEYCODE_BUTTON_R2,
         )
@@ -55,6 +56,11 @@ object InputClassGamePad : InputClass {
             KeyEvent.KEYCODE_BUTTON_15,
             KeyEvent.KEYCODE_BUTTON_16,
             KeyEvent.KEYCODE_BUTTON_MODE,
+            KeyEvent.KEYCODE_DPAD_UP,
+            KeyEvent.KEYCODE_DPAD_DOWN,
+            KeyEvent.KEYCODE_DPAD_LEFT,
+            KeyEvent.KEYCODE_DPAD_RIGHT,
+            KeyEvent.KEYCODE_DPAD_CENTER,
             KeyEvent.KEYCODE_BACK,
         )
 }

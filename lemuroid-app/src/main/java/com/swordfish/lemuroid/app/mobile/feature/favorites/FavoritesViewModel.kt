@@ -18,4 +18,10 @@ class FavoritesViewModel(retrogradeDb: RetrogradeDatabase) : ViewModel() {
 
     val favorites: Flow<PagingData<Game>> =
         buildFlowPaging(20, viewModelScope) { retrogradeDb.gameDao().selectFavorites() }
+
+    val allGames: Flow<List<Game>> =
+        retrogradeDb.gameDao().selectAllGames()
+
+    val favoriteGamesList: Flow<List<Game>> =
+        retrogradeDb.gameDao().selectAllFavoritesFlow()
 }

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 class GamesViewModel(
@@ -40,6 +41,18 @@ class GamesViewModel(
                     0 -> emptyFlow()
                     1 -> buildFlowPaging(20, viewModelScope) { retrogradeDb.gameDao().selectBySystem(it.first()) }
                     else -> buildFlowPaging(20, viewModelScope) { retrogradeDb.gameDao().selectBySystems(it) }
+                }
+            }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val gamesListFlow: Flow<List<Game>> =
+        metaSystemId
+            .map { metaSystem -> metaSystem.systemIDs.map { it.dbname } }
+            .flatMapLatest { systemIds ->
+                if (systemIds.isEmpty()) {
+                    flowOf(emptyList())
+                } else {
+                    retrogradeDb.gameDao().selectAllBySystemsFlow(systemIds)
                 }
             }
 }

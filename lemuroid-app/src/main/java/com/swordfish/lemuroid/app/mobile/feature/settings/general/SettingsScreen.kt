@@ -53,12 +53,45 @@ fun SettingsScreen(
             indexingInProgress = indexingInProgress,
             scanInProgress = scanInProgress,
         )
+        AppearanceSettings()
         GeneralSettings()
         InputSettings(navController = navController)
         MiscSettings(
             indexingInProgress = indexingInProgress,
             isSaveSyncSupported = state.isSaveSyncSupported,
             navController = navController,
+        )
+    }
+}
+
+@Composable
+private fun AppearanceSettings() {
+    LemuroidCardSettingsGroup(
+        title = { Text(text = stringResource(id = R.string.settings_category_appearance)) },
+    ) {
+        LemuroidSettingsList(
+            state =
+                indexPreferenceState(
+                    R.string.pref_key_theme_mode,
+                    "dark",
+                    stringListResource(R.array.pref_key_theme_mode_values),
+                ),
+            title = {
+                Text(text = stringResource(id = R.string.settings_title_theme_mode))
+            },
+            items = stringListResource(R.array.pref_key_theme_mode_display_names),
+        )
+        LemuroidSettingsList(
+            state =
+                indexPreferenceState(
+                    R.string.pref_key_theme_accent,
+                    "dynamic",
+                    stringListResource(R.array.pref_key_theme_accent_values),
+                ),
+            title = {
+                Text(text = stringResource(id = R.string.settings_title_theme_accent))
+            },
+            items = stringListResource(R.array.pref_key_theme_accent_display_names),
         )
     }
 }
@@ -114,6 +147,40 @@ private fun InputSettings(navController: NavController) {
         LemuroidSettingsList(
             state =
                 indexPreferenceState(
+                    R.string.pref_key_touch_skin,
+                    "auto",
+                    stringListResource(R.array.pref_key_touch_skin_values),
+                ),
+            title = {
+                Text(text = stringResource(id = R.string.settings_title_touch_skin))
+            },
+            items = stringListResource(R.array.pref_key_touch_skin_display_names),
+        )
+        LemuroidSettingsSlider(
+            enabled = true,
+            state =
+                intPreferenceState(
+                    key = stringResource(id = R.string.pref_key_touch_controls_opacity),
+                    default = 85,
+                ),
+            steps = 16,
+            valueRange = 15f..100f,
+            title = { Text(text = stringResource(R.string.settings_title_touch_opacity)) },
+        )
+        LemuroidSettingsSlider(
+            enabled = true,
+            state =
+                intPreferenceState(
+                    key = stringResource(id = R.string.pref_key_touch_auto_hide_seconds),
+                    default = 0,
+                ),
+            steps = 14,
+            valueRange = 0f..15f,
+            title = { Text(text = stringResource(R.string.settings_title_touch_auto_hide)) },
+        )
+        LemuroidSettingsList(
+            state =
+                indexPreferenceState(
                     R.string.pref_key_haptic_feedback_mode,
                     "press",
                     stringListResource(R.array.pref_key_haptic_feedback_mode_values),
@@ -128,6 +195,24 @@ private fun InputSettings(navController: NavController) {
             title = {
                 Text(text = stringResource(id = R.string.settings_title_use_analog_stick))
             },
+        )
+        LemuroidSettingsSwitch(
+            state = booleanPreferenceState(R.string.pref_key_touch_quick_actions, true),
+            title = {
+                Text(text = stringResource(id = R.string.settings_title_touch_quick_actions))
+            },
+        )
+        LemuroidSettingsList(
+            state =
+                indexPreferenceState(
+                    R.string.pref_key_gesture_double_tap,
+                    "fast_forward",
+                    stringListResource(R.array.pref_key_gesture_double_tap_values),
+                ),
+            title = {
+                Text(text = stringResource(id = R.string.settings_title_gesture_double_tap))
+            },
+            items = stringListResource(R.array.pref_key_gesture_double_tap_display_names),
         )
         LemuroidSettingsMenuLink(
             title = { Text(text = stringResource(id = R.string.settings_title_gamepad_settings)) },

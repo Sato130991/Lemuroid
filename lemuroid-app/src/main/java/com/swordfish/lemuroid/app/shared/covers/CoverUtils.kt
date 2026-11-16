@@ -10,18 +10,53 @@ import coil.memory.MemoryCache
 import coil.request.CachePolicy
 import com.swordfish.lemuroid.common.drawable.TextDrawable
 import com.swordfish.lemuroid.common.graphics.ColorUtils
+import com.swordfish.lemuroid.lib.library.GameSystem
+import com.swordfish.lemuroid.lib.library.SystemID
 import com.swordfish.lemuroid.lib.library.db.entity.Game
 import kotlinx.coroutines.Dispatchers
 import okhttp3.OkHttpClient
 
 object CoverUtils {
+    private val THUMB_REPLACE = Regex("[&*/:`<>?\\\\|]")
+    private val BRACKETS_REGEX = Regex("\\[.*?\\]")
+
+    fun resolveCoverUrl(game: Game): String? {
+        val customOrDb = game.displayCoverUrl()
+        if (!customOrDb.isNullOrBlank()) {
+            return if (customOrDb.startsWith("http://thumbnails.libretro.com/")) {
+                customOrDb.replaceFirst("http://", "https://")
+            } else {
+                customOrDb
+            }
+        }
+        return runCatching {
+            val system = GameSystem.findById(game.systemId)
+            val systemName =
+                if (system.id == SystemID.MAME2003PLUS) {
+                    "MAME"
+                } else {
+                    system.libretroFullName
+                }
+            val cleanTitle =
+                game.title
+                    .replace(BRACKETS_REGEX, "")
+                    .trim()
+                    .replace(THUMB_REPLACE, "_")
+            if (cleanTitle.isBlank()) {
+                null
+            } else {
+                "https://thumbnails.libretro.com/$systemName/Named_Boxarts/$cleanTitle.png"
+            }
+        }.getOrNull()
+    }
+
     fun loadCover(
         game: Game,
         imageView: ImageView?,
     ) {
         if (imageView == null) return
 
-        imageView.load(game.displayCoverUrl(), imageView.context.imageLoader) {
+        imageView.load(resolveCoverUrl(game), imageView.context.imageLoader) {
             val fallbackDrawable = getFallbackDrawable(game)
             fallback(fallbackDrawable)
             error(fallbackDrawable)
@@ -33,7 +68,7 @@ object CoverUtils {
             .diskCache(
                 DiskCache.Builder()
                     .directory(applicationContext.cacheDir.resolve("image_cache"))
-                    .maxSizePercent(0.20)
+                    .maxSizePercent(0.25)
                     .build(),
             )
             .memoryCache {
@@ -43,7 +78,7 @@ object CoverUtils {
             }
             .okHttpClient {
                 OkHttpClient.Builder()
-                    .addNetworkInterceptor(ThrottleFailedThumbnailsInterceptor)
+                    .addInterceptor(ThrottleFailedThumbnailsInterceptor)
                     .build()
             }
             .crossfade(true)
@@ -71,7 +106,7 @@ object CoverUtils {
             .filter { it.isDigit() or it.isUpperCase() or (it == '&') }
             .take(3)
             .joinToString("")
-            .ifBlank { game.displayName().first().toString() }
+            .ifBlank { game.displayName().firstOrNull()?.toString() ?: "?" }
             .capitalize()
     }
 

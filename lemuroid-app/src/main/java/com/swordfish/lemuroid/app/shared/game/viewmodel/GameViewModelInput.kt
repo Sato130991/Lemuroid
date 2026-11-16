@@ -79,13 +79,14 @@ class GameViewModelInput(
         port: Int,
     ) {
         if (port < 0) return
-        when (event.source) {
-            InputDevice.SOURCE_JOYSTICK -> {
-                if (controllerConfigsState.value[port]?.mergeDPADAndLeftStickEvents == true) {
-                    sendMergedMotionEvents(event, port)
-                } else {
-                    sendSeparateMotionEvents(event, port)
-                }
+        val isJoystickOrGamepad =
+            (event.source and InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK ||
+                (event.source and InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD
+        if (isJoystickOrGamepad) {
+            if (controllerConfigsState.value[port]?.mergeDPADAndLeftStickEvents == true) {
+                sendMergedMotionEvents(event, port)
+            } else {
+                sendSeparateMotionEvents(event, port)
             }
         }
     }
@@ -106,13 +107,21 @@ class GameViewModelInput(
         retroGameView.retroGameView?.sendMotionEvent(MOTION_SOURCE_DPAD, xVal, yVal, port)
         retroGameView.retroGameView?.sendMotionEvent(MOTION_SOURCE_ANALOG_LEFT, xVal, yVal, port)
 
-        sendStickMotion(
-            event,
-            MOTION_SOURCE_ANALOG_RIGHT,
-            MotionEvent.AXIS_Z,
-            MotionEvent.AXIS_RZ,
-            port,
-        )
+        sendRightStickMotion(event, port)
+    }
+
+    private fun sendRightStickMotion(
+        event: MotionEvent,
+        port: Int,
+    ) {
+        val primaryCoords = retrieveCoordinates(event, MotionEvent.AXIS_Z, MotionEvent.AXIS_RZ)
+        val coords =
+            if (abs(primaryCoords.x) > 0.01f || abs(primaryCoords.y) > 0.01f) {
+                primaryCoords
+            } else {
+                retrieveCoordinates(event, MotionEvent.AXIS_RX, MotionEvent.AXIS_RY)
+            }
+        retroGameView.retroGameView?.sendMotionEvent(MOTION_SOURCE_ANALOG_RIGHT, coords.x, coords.y, port)
     }
 
     private fun sendStickMotion(
@@ -159,13 +168,7 @@ class GameViewModelInput(
             MotionEvent.AXIS_Y,
             port,
         )
-        sendStickMotion(
-            event,
-            MOTION_SOURCE_ANALOG_RIGHT,
-            MotionEvent.AXIS_Z,
-            MotionEvent.AXIS_RZ,
-            port,
-        )
+        sendRightStickMotion(event, port)
     }
 
     private fun retrieveCoordinates(
@@ -173,7 +176,13 @@ class GameViewModelInput(
         xAxis: Int,
         yAxis: Int,
     ): PointF {
-        return PointF(event.getAxisValue(xAxis), event.getAxisValue(yAxis))
+        val rawX = event.getAxisValue(xAxis)
+        val rawY = event.getAxisValue(yAxis)
+        val deadzone = 0.08f
+        return PointF(
+            if (abs(rawX) < deadzone) 0f else rawX,
+            if (abs(rawY) < deadzone) 0f else rawY,
+        )
     }
 
     fun sendKeyEvent(

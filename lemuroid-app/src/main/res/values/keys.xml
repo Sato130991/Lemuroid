@@ -11,6 +11,13 @@
     <string name="pref_key_reset_gamepad_bindings" translatable="false">reset_gamepad_bindings</string>
     <string name="pref_key_haptic_feedback_mode" translatable="false">haptic_feedback_mode</string>
     <string name="pref_key_use_analog_stick" translatable="false">use_analog_stick</string>
+    <string name="pref_key_touch_controls_opacity" translatable="false">touch_controls_opacity</string>
+    <string name="pref_key_touch_auto_hide_seconds" translatable="false">touch_auto_hide_seconds</string>
+    <string name="pref_key_touch_skin" translatable="false">touch_controls_skin</string>
+    <string name="pref_key_touch_quick_actions" translatable="false">touch_quick_actions</string>
+    <string name="pref_key_gesture_double_tap" translatable="false">gesture_double_tap_action</string>
+    <string name="pref_key_theme_mode" translatable="false">theme_mode</string>
+    <string name="pref_key_theme_accent" translatable="false">theme_accent</string>
     <string name="pref_key_tilt_sensitivity_index" translatable="false">tilt_sensitivity_index</string>
     <string name="pref_key_hd_mode_quality" translatable="false">hd_mode_quality</string>
     <string name="pref_key_autosave" translatable="false">autosave</string>
@@ -49,6 +56,8 @@
         <item>smooth</item>
         <item>crt</item>
         <item>lcd</item>
+        <item>upscale_fast</item>
+        <item>upscale_soft</item>
     </string-array>
 
     <string-array translatable="false" name="pref_key_shader_filter_display_names">
@@ -57,6 +66,8 @@
         <item>@string/shader_filter_names_smooth</item>
         <item>@string/shader_filter_names_crt</item>
         <item>@string/shader_filter_names_lcd</item>
+        <item>@string/shader_filter_names_upscale_fast</item>
+        <item>@string/shader_filter_names_upscale_soft</item>
     </string-array>
 
     <string-array translatable="false" name="pref_key_viewport_alignment_values">
@@ -69,5 +80,83 @@
         <item>@string/viewport_alignment_names_top</item>
         <item>@string/viewport_alignment_names_center</item>
         <item>@string/viewport_alignment_names_bottom</item>
+    </string-array>
+
+    <string-array translatable="false" name="pref_key_theme_mode_values">
+        <item>dark</item>
+        <item>light</item>
+        <item>amoled</item>
+        <item>system</item>
+    </string-array>
+
+    <string-array translatable="false" name="pref_key_theme_mode_display_names">
+        <item>@string/theme_mode_dark</item>
+        <item>@string/theme_mode_light</item>
+        <item>@string/theme_mode_amoled</item>
+        <item>@string/theme_mode_system</item>
+    </string-array>
+
+    <string-array translatable="false" name="pref_key_theme_accent_values">
+        <item>dynamic</item>
+        <item>green</item>
+        <item>blue</item>
+        <item>purple</item>
+        <item>red</item>
+        <item>orange</item>
+    </string-array>
+
+    <string-array translatable="false" name="pref_key_theme_accent_display_names">
+        <item>@string/theme_accent_dynamic</item>
+        <item>@string/theme_accent_green</item>
+        <item>@string/theme_accent_blue</item>
+        <item>@string/theme_accent_purple</item>
+        <item>@string/theme_accent_red</item>
+        <item>@string/theme_accent_orange</item>
+    </string-array>
+
+    <string-array translatable="false" name="pref_key_touch_skin_values">
+        <item>auto</item>
+        <item>classic</item>
+        <item>nes</item>
+        <item>snes</item>
+        <item>gb</item>
+        <item>gba</item>
+        <item>genesis</item>
+        <item>psx</item>
+        <item>n64</item>
+        <item>arcade</item>
+        <item>oled</item>
+    </string-array>
+
+    <string-array translatable="false" name="pref_key_touch_skin_display_names">
+        <item>@string/touch_skin_auto</item>
+        <item>@string/touch_skin_classic</item>
+        <item>@string/touch_skin_nes</item>
+        <item>@string/touch_skin_snes</item>
+        <item>@string/touch_skin_gb</item>
+        <item>@string/touch_skin_gba</item>
+        <item>@string/touch_skin_genesis</item>
+        <item>@string/touch_skin_psx</item>
+        <item>@string/touch_skin_n64</item>
+        <item>@string/touch_skin_arcade</item>
+        <item>@string/touch_skin_oled</item>
+    </string-array>
+
+    <string-array translatable="false" name="pref_key_gesture_double_tap_values">
+        <item>fast_forward</item>
+        <item>quick_save</item>
+        <item>quick_load</item>
+        <item>toggle_controls</item>
+        <item>menu</item>
+        <item>none</item>
+    </string-array>
+
+    <string-array translatable="false" name="pref_key_gesture_double_tap_display_names">
+        <item>@string/gesture_action_fast_forward</item>
+        <item>@string/gesture_action_quick_save</item>
+        <item>@string/gesture_action_quick_load</item>
+        <item>@string/gesture_action_toggle_controls</item>
+        <item>@string/gesture_action_menu</item>
+        <item>@string/gesture_action_none</item>
     </string-array>
 </resources>

@@ -32,6 +32,32 @@ fun GameMenuHomeScreen(
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
         if (gameMenuRequest.coreConfig.statesSupported) {
             LemuroidSettingsMenuLink(
+                title = { Text(text = stringResource(id = R.string.game_menu_quick_save)) },
+                icon = {
+                    Icon(
+                        painterResource(R.drawable.ic_menu_save),
+                        contentDescription = stringResource(id = R.string.game_menu_quick_save),
+                    )
+                },
+                onClick = {
+                    onResult { putExtra(GameMenuContract.RESULT_QUICK_SAVE, true) }
+                },
+            )
+
+            LemuroidSettingsMenuLink(
+                title = { Text(text = stringResource(id = R.string.game_menu_quick_load)) },
+                icon = {
+                    Icon(
+                        painterResource(R.drawable.ic_menu_load),
+                        contentDescription = stringResource(id = R.string.game_menu_quick_load),
+                    )
+                },
+                onClick = {
+                    onResult { putExtra(GameMenuContract.RESULT_QUICK_LOAD, true) }
+                },
+            )
+
+            LemuroidSettingsMenuLink(
                 title = { Text(text = stringResource(id = R.string.game_menu_save)) },
                 icon = {
                     Icon(
